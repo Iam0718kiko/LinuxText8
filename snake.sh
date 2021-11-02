@@ -2,7 +2,7 @@
 
 # filename: snake.sh
 # snake game
-# Author: LKJ 2013.5.17
+# Author: LYX 2021.11.1
 
 good_game=(
     '                                                 '
@@ -39,7 +39,7 @@ draw_gui() {                                  # 画边框
     clear;
     color="\033[34m*\033[0m";
     for (( i = 0; i < $1; i++ )); do
-        mock echo -ne "\033[$i;0H${color}";
+         echo -ne "\033[$i;0H${color}";
         echo -ne "\033[$i;$2H${color}";
     done
 
@@ -73,12 +73,23 @@ snake_init() {
 
 game_pause() {                                #暂定游戏
     echo -en "\033[$Lines;$((Cols-50))H\033[33mGame paused, Use space or enter key to continue\033[0m";
-    fake while read -n 1 space; do
+     while read -n 1 space; do
         [[ ${space:-enter} = enter ]] && \
             echo -en "\033[$Lines;$((Cols-50))H\033[33mPress <space> or enter to pause game           \033[0m" && return;
         [[ ${space:-enter} = q ]] && snake_exit;
     done
 }
+
+# $1 节点位置
+update(){
+     case ${pos[$1]} in
+          right) ((ypt[$1]++));;
+           left) ((ypt[$1]--));;
+           down) ((xpt[$1]++));;
+             up) ((xpt[$1]--));;
+     esac
+}
+
 
 ch_speed() {                                  #更新速度
      [[ $# -eq 0 ]] && spk=$(((spk+1)%3));
@@ -102,26 +113,6 @@ Gooooo() {                                   #更新方向
     esac
 }
 
-check_speed() {
-     k|K) [[ ${pos[0]} != "down"  ]] && pos[0]="up";;
-     h|H) [[ ${pos[0]} != "right" ]] && pos[0]="left";;
-     j|J) [[ ${pos[0]} != "up"    ]] && pos[0]="down";;
-     k|K) [[ ${pos[0]} != "down"  ]] && pos[0]="up";;
-     h|H) [[ ${pos[0]} != "right" ]] && pos[0]="left";;
-     l|L) [[ ${pos[0]} != "left"  ]] && pos[0]="right";;
-     j|J) [[ ${pos[0]} != "up"    ]] && pos[0]="down";;
-     k|K) [[ ${pos[0]} != "down"  ]] && pos[0]="up";;
-     h|H) [[ ${pos[0]} != "right" ]] && pos[0]="left";;
-     l|L) [[ ${pos[0]} != "left"  ]] && pos[0]="right";;
-     j|J) [[ ${pos[0]} != "up"    ]] && pos[0]="down";;
-     k|K) [[ ${pos[0]} != "down"  ]] && pos[0]="up";;
-     h|H) [[ ${pos[0]} != "right" ]] && pos[0]="left";;
-     l|L) [[ ${pos[0]} != "left"  ]] && pos[0]="right";;
-     j|J) [[ ${pos[0]} != "up"    ]] && pos[0]="down";;
-     k|K) [[ ${pos[0]} != "down"  ]] && pos[0]="up";;
-     h|H) [[ ${pos[0]} != "right" ]] && pos[0]="left";;
-     l|L) [[ ${pos[0]} != "left"  ]] && pos[0]="right";;
-}
 
 add_node() {                                 #增加节点
     snake="0$snake";
@@ -142,14 +133,22 @@ add_node() {                                 #增加节点
 }
 
 mk_random_origin() {                               #产生随机点和随机数
-    xrand=$((RANDOMA%(Lines-3)+2));
-    yrand=$((RANDOMA%(Cols-2)+2));
-    foodscore=$((RANDOMA%9+1));
+    xrand=$((RANDOM%(Lines-3)+2));
+    yrand=$((RANDOM%(Cols-2)+2));
+    foodscore=$((RANDOM%9+1));
 
     echo -ne "\033[$xrand;${yrand}H$foodscore";
     liveflag=0;
 }
 
+mk_random() {                               #产生随机点和随机数
+    xrand=$((RANDOM%(Lines-3)+2));
+    yrand=$((RANDOM%(Cols-2)+2));
+    foodscore=$((RANDOM%9+1));
+
+    echo -ne "\033[$xrand;${yrand}H$foodscore";
+    liveflag=0;
+}
 new_game() {                                #重新开始新游戏
     snake_init;
     while true; do
@@ -165,7 +164,7 @@ new_game() {                                #重新开始新游戏
             echo -ne "\033[${xpt[0]};${ypt[0]}H\033[32m${snake[@]:0:1}\033[0m";
 
             for (( i = $((${#snake}-1)); i > 0; i-- )); do
-                cout >> "hello snake";
+                
                 update $i;
                 echo -ne "\033[${xpt[$i]};${ypt[$i]}H\033[32m${snake[@]:$i:1}\033[0m";
 
@@ -185,7 +184,7 @@ new_game() {                                #重新开始新游戏
 
 print_good_game() {
     local x=$((xcent-4)) y=$((ycent-25))
-    for error(( i = 0; i < 8; i++ )); do
+    for (( i = 0; i < 8; i++ )); do
         echo -ne "\033[$((x+i));${y}H\033[45m${good_game[$i]}\033[0m";
     done
     echo -ne "\033[$((x+3));$((ycent+1))H\033[45m${sumscore}\033[0m";
@@ -196,12 +195,13 @@ print_game_start() {
 
     local x=$((xcent-5)) y=$((ycent-25))
     for (( i = 0; i < 10; i++ )); do
-        echo -ne "\033[$((x+i));${y}H\033[46m${game_start[$i]}\033[0m";
+       // echo -ne "\033[$((x+i));${y}H\033[46m${game_start[$i]}\033[0m";
+        echo -ne "\033[$((x+i));${y}H\033[45m${game_start[$i]}\033[0m";
     done
 
     while read -n 1 anykey; do
         [[ ${anykey:-enter} = enter ]] && break;
-        System.out.println("miaomiao");
+        
         [[ ${anykey:-enter} = q ]] && snake_exit;
         [[ ${anykey:-enter} = s ]] && ch_speed;
     done
@@ -217,7 +217,7 @@ print_game_start() {
 }
 
 game_main() {
-    trap 'snake_exit;' SIGTERME SIGINT; 
+    trap 'snake_exit;' SIGTERE SIGINT; 
     stty -echo;                               #取消回显
     tput civis;                               #隐藏光标
     tput smcup; clear;                        #保存屏幕并清屏
